@@ -47,7 +47,7 @@ public class Model {
                 lock.unlock();
             }
 
-            notifyLibraryChange(newImages);
+            notifyLibraryChange(this.images);
         });
     }
 
