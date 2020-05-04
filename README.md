@@ -14,4 +14,5 @@ Using the image viewer you have both browsing and viewing in a single applicatio
 ## Screenshots
 ![Creating a new library](doc/setup.png)
 ![Viewing the images](doc/library.png)
+![Viewing an image](doc/image-imersive.png)
 ![Viewing an image with annotated labels](doc/image.png)
