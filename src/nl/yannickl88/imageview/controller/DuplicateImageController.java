@@ -7,6 +7,9 @@ import nl.yannickl88.imageview.view.DuplicateImagesView;
 
 import java.util.ArrayList;
 
+/**
+ * Controller for the {@see DuplicateImagesView}
+ */
 public class DuplicateImageController {
     private final DuplicateImageChecker checker;
     private final ArrayList<DuplicateImageChecker.Duplicate> removedDuplicates;

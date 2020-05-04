@@ -7,6 +7,11 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
 import java.util.ArrayList;
 
+/**
+ * Label input field. This validates the input to make sure only the characters are allowed for labels.
+ *
+ * Format for a label is: {@code [a-z0-9]+}.
+ */
 public class LabelField extends JTextField {
     private final ArrayList<ChangeListener> listeners;
     private final String originalValue;

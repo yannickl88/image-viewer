@@ -2,10 +2,20 @@ package nl.yannickl88.imageview.view.layout;
 
 import java.awt.*;
 
+/**
+ * Layout which orders the components in columns based on the available width. A minimum cell size is used. Rows are
+ * not spaced but appended right after each other. The first and last column do not have outer padding, everything in
+ * between is spaced out evenly.
+ *
+ * This is similar how Windows 10 explorer tiles folders and items.
+ */
 public class ColumnLayout implements LayoutManager {
     private final Component component;
     private final int minimalCellSize;
 
+    /**
+     * Data class which contains the grid information.
+     */
     private static class Grid {
         public final int preferredWidth, columns, rows;
 
@@ -16,6 +26,10 @@ public class ColumnLayout implements LayoutManager {
         }
     }
 
+    /**
+     * Creates a column layout based on a parent component and the minimal cell size. When used in combination with a
+     * {@code JScrollPane}, use the Viewport of the pane as the component.
+     */
     public ColumnLayout(Component component, int minimalCellSize) {
         this.component = component;
         this.minimalCellSize = minimalCellSize;
@@ -72,6 +86,9 @@ public class ColumnLayout implements LayoutManager {
         return getClass().getName() + "[]";
     }
 
+    /**
+     * Calculate the grid to be used for the layout.
+     */
     private Grid getGrid(Container parent) {
         int parentWidth = this.component.getWidth();
 
@@ -95,20 +112,23 @@ public class ColumnLayout implements LayoutManager {
         }
     }
 
-    private int getOffsetInRow(Grid grid, int index) {
-        // First image in the column is aligned to the left side of the container
-        if (index == 0) {
+    /**
+     * Calculate the offset needed based on the Grid and for which column.
+     */
+    private int getOffsetInRow(Grid grid, int column) {
+        // First item in the column is aligned to the left side of the container
+        if (column == 0) {
             return 0;
         }
 
-        // Last image in the column is aligned to the right side of the container
-        if (index == grid.columns - 1) {
+        // Last item in the column is aligned to the right side of the container
+        if (column == grid.columns - 1) {
             return grid.preferredWidth - minimalCellSize;
         }
 
-        // Middle images in the column are equally spread out over the remaining width container
+        // Middle item in the column are equally spread out over the remaining width container
         int padding = (grid.preferredWidth - (minimalCellSize * grid.columns)) / (grid.columns - 1);
 
-        return (padding + minimalCellSize) * index;
+        return (padding + minimalCellSize) * column;
     }
 }

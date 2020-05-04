@@ -65,7 +65,7 @@ public class ImageView extends JPanel implements Image.ImageChangeListener {
 
                 setAndValidateDrawableImage(image, drawable);
             } catch (Throwable e) {
-                Logger.critical(e);
+                Logger.log(e);
             }
         }
     }

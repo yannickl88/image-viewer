@@ -55,7 +55,7 @@ public class LibraryWatcher extends Thread {
 
                 for (String f : filesToAdd) {
                     try {
-                        library.add(Image.fromFile(new File(f)));
+                        library.add(new Image(new File(f)));
                     } catch (IOException e) {
                         e.printStackTrace();
                     }

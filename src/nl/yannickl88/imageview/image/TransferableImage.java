@@ -5,6 +5,9 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 
+/**
+ * Transferable image for copying an image to the clipboard.
+ */
 public class TransferableImage implements Transferable {
     private final Image image;
 

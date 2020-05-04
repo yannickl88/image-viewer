@@ -3,6 +3,9 @@ package nl.yannickl88.imageview.controller;
 import nl.yannickl88.imageview.model.library.Library;
 import nl.yannickl88.imageview.view.SetupView;
 
+/**
+ * Controller for the {@see SetupController}
+ */
 public class SetupController {
     private final SetupView view;
     private final OpenHandler handler;

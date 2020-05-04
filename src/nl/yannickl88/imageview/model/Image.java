@@ -11,37 +11,16 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.*;
 
+/**
+ * Data wrapper for an image in the library. This contains a thumbnail and some metadata.
+ */
 public class Image {
     public static final int THUMB_SIZE = 150;
 
-    public static Image fromFile(File file) throws IOException {
-        BufferedImage image = ImageIO.read(file);
-        BufferedImage thumb = createThumb(image);
-
-        return new Image(thumb, new Metadata(image.getWidth(), image.getHeight(), file.getAbsolutePath(), file.lastModified(), new HashSet<>()));
-    }
-
-    private static BufferedImage createThumb(BufferedImage image) {
-        double ratio = (double) image.getWidth() / (double) image.getHeight();
-        int width = THUMB_SIZE, height = THUMB_SIZE;
-
-        if (ratio < 1.0) {
-            width = (int) (ratio * height);
-        } else {
-            height = (int) (width / ratio);
-        }
-
-        java.awt.Image resized = image.getScaledInstance(width, height, java.awt.Image.SCALE_SMOOTH);
-
-        BufferedImage thumb = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        Graphics g = thumb.getGraphics();
-
-        g.drawImage(resized, 0, 0, null);
-        g.dispose();
-
-        return thumb;
-    }
-
+    /**
+     * Metadata for an image. This contains information about width, height, modification time, original file path and
+     * labels for an image.
+     */
     public static class Metadata {
         public final int width, height;
         public final String path;
@@ -57,6 +36,10 @@ public class Image {
         }
     }
 
+    /**
+     * Metadata which has been bound to the Image for notifying of any changes made to the metadata.
+     * @see Metadata
+     */
     public static class BoundMetadata {
         public final int width, height;
         public final String name;
@@ -79,6 +62,9 @@ public class Image {
             updateLabels(metadata.labels);
         }
 
+        /**
+         * Set the labels for the image.
+         */
         public void setLabels(Set<String> labels) {
             updateLabels(labels);
 
@@ -92,6 +78,47 @@ public class Image {
         }
     }
 
+    /**
+     * Return a resized version of the image for the thumbnail.
+     */
+    private static BufferedImage createThumb(BufferedImage image) {
+        double ratio = (double) image.getWidth() / (double) image.getHeight();
+        int width = THUMB_SIZE, height = THUMB_SIZE;
+
+        if (ratio < 1.0) {
+            width = (int) (ratio * height);
+        } else {
+            height = (int) (width / ratio);
+        }
+
+        java.awt.Image resized = image.getScaledInstance(width, height, java.awt.Image.SCALE_SMOOTH);
+
+        BufferedImage thumb = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        Graphics g = thumb.getGraphics();
+
+        g.drawImage(resized, 0, 0, null);
+        g.dispose();
+
+        return thumb;
+    }
+
+    /**
+     * Decode a base64image string into a BufferedImage.
+     */
+    private static BufferedImage fromBase64String(String encodedString) throws IOException {
+        return ImageIO.read(new ByteArrayInputStream(Base64.getDecoder().decode(encodedString)));
+    }
+
+    /**
+     * Encode a BufferedImage string into a base64image.
+     */
+    private static String toBase64String(BufferedImage image) throws IOException {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        ImageIO.write(image, "jpg", stream);
+
+        return Base64.getEncoder().encodeToString(stream.toByteArray());
+    }
+
     public final String thumbData;
     public final BoundMetadata metadata;
     public final BufferedImage thumb;
@@ -101,10 +128,30 @@ public class Image {
         void onChange(Image image);
     }
 
+    /**
+     * Create an Image from a file.
+     */
+    public Image(File file) throws IOException {
+        this(file, ImageIO.read(file));
+    }
+
+    /**
+     * Intermediate step for creating images from a file.
+     */
+    private Image(File file, BufferedImage image) throws IOException {
+        this(createThumb(image), new Metadata(image.getWidth(), image.getHeight(), file.getAbsolutePath(), file.lastModified(), new HashSet<>()));
+    }
+
+    /**
+     * Create an image from the base64encoded thumbnail data and the metadata.
+     */
     public Image(String thumbData, Metadata metadata) throws IOException {
         this(fromBase64String(thumbData), thumbData, metadata);
     }
 
+    /**
+     * Create an image from the BufferedImage thumbnail data and the metadata.
+     */
     public Image(BufferedImage thumb, Metadata metadata) throws IOException {
         this(thumb, toBase64String(thumb), metadata);
     }
@@ -117,25 +164,23 @@ public class Image {
         listeners = new ArrayList<>();
     }
 
+    /**
+     * Register a change listener for this image.
+     */
     public void addChangeListener(ImageChangeListener listener) {
         listeners.add(listener);
     }
 
+    /**
+     * Remove any registered change listener for this image.
+     */
     public void removeChangeListener(ImageChangeListener listener) {
         listeners.remove(listener);
     }
 
-    private static BufferedImage fromBase64String(String encodedString) throws IOException {
-        return ImageIO.read(new ByteArrayInputStream(Base64.getDecoder().decode(encodedString)));
-    }
-
-    private static String toBase64String(BufferedImage image) throws IOException {
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        ImageIO.write(image, "jpg", stream);
-
-        return Base64.getEncoder().encodeToString(stream.toByteArray());
-    }
-
+    /**
+     * Notify all registered ImageChangeListener for changes to the image.
+     */
     private void notifyOfImageChange() {
         for (ImageChangeListener l : listeners) {
             l.onChange(this);

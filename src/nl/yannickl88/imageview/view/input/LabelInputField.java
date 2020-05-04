@@ -7,7 +7,6 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
-import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.Arrays;
@@ -15,6 +14,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Labels input field. This validates the input to make sure only a list of labels are allowed.
+ *
+ * Format for a label is: {@code [a-z0-9]+}.
+ */
 public class LabelInputField extends JTextArea {
     private final Set<String> choices;
 

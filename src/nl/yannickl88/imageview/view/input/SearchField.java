@@ -5,9 +5,21 @@ import javax.swing.text.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
+/**
+ * Input field for the search bar. This filters out any characters which are not allowed when searching. It also has an
+ * action handler for changes in the search query (i.e., when there is typing) and when the user presses ESC to cancel
+ * searching.
+ */
 public class SearchField extends JTextField {
     public interface ActionHandler {
+        /**
+         * Triggers when the user changes the search query either by typing or pasting something in the search field.
+         */
         void onSearch(String query);
+
+        /**
+         * Triggers when the user presses ESC to cancel searching.
+         */
         void onCancel();
     }
 

@@ -28,6 +28,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
+/**
+ * Library class which represent a group of images in a folder. These images can contain additional information for
+ * easy querying.
+ */
 public class Library {
     private final String name;
     private final File root;
@@ -39,9 +43,15 @@ public class Library {
     private boolean isLoaded = false;
 
     public interface LibraryChangeListener {
+        /**
+         * Triggers when an images is added, removed or updated in the library.
+         */
         void onLibraryChange(List<Image> images);
     }
 
+    /**
+     * Asynchronous loader for the library data. This helps larger library be more responsive when opening them.
+     */
     public static class LibraryLoader extends Thread {
         private final Library library;
         private final NodeList images;
@@ -101,6 +111,9 @@ public class Library {
         }
     }
 
+    /**
+     * Initialized a new library for a given folder.
+     */
     public static Library init(File libraryPath) {
         Library library = new Library("root", libraryPath, null);
         library.isLoaded = true;
@@ -108,6 +121,9 @@ public class Library {
         return library;
     }
 
+    /**
+     * Opens am existing library for a given file.
+     */
     public static Library open(File config) {
         try {
             DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -133,6 +149,9 @@ public class Library {
         return null;
     }
 
+    /**
+     * Save the library and persist it to disk.
+     */
     public void save() {
         if (null == config) {
             return;
@@ -209,10 +228,16 @@ public class Library {
         lock = new ReentrantLock();
     }
 
+    /**
+     * Register a change listener for the library.
+     */
     public void addChangeListener(LibraryChangeListener listener) {
         listeners.add(listener);
     }
 
+    /**
+     * Return all images currently present in the library.
+     */
     public List<Image> getImages() {
         lock.lock();
         try {
@@ -222,14 +247,23 @@ public class Library {
         }
     }
 
+    /**
+     * Return the file of the library information.
+     */
     public File getDir() {
         return root;
     }
 
+    /**
+     * Return if the library has been saved and made persistent.
+     */
     public boolean isPersistent() {
         return null != this.config;
     }
 
+    /**
+     * Set the file used for saving and persisting the library.
+     */
     public void setConfigFile(File file) {
         this.config = file;
 
@@ -237,10 +271,19 @@ public class Library {
         this.save();
     }
 
+    /**
+     * Return if the library is fully loaded. This returns {@code true} when images are still being added by the
+     * {@code LibraryLoader}.
+     */
     public boolean isLoaded() {
         return isLoaded;
     }
 
+    /**
+     * Check if a file is present in the library.
+     *
+     * NOTE: the name should be an absolute path the file.
+     */
     public boolean contains(String name) {
         lock.lock();
 
@@ -257,6 +300,9 @@ public class Library {
         }
     }
 
+    /**
+     * Remove an image from the library reference, this does not delete the file on-disk.
+     */
     public void remove(Image image) {
         lock.lock();
         try {
@@ -268,6 +314,9 @@ public class Library {
         notifyLibraryChange();
     }
 
+    /**
+     * Remove an image from the library reference AND also delete the file on-disk.
+     */
     public void delete(Image image) {
         lock.lock();
         try {
@@ -282,12 +331,18 @@ public class Library {
         notifyLibraryChange();
     }
 
+    /**
+     * Add an image to the library.
+     */
     public void add(Image image) {
         addSilent(image);
 
         notifyLibraryChange();
     }
 
+    /**
+     * Add an image to the library without notifying the change listeners.
+     */
     private void addSilent(Image image) {
         lock.lock();
         try {
@@ -303,34 +358,39 @@ public class Library {
         });
     }
 
+    /**
+     * Return all labels which have been used by any of the images in the library.
+     */
     public Set<String> getAllLabels() {
         return labels;
     }
 
-    public void recalculateLabels() {
-        HashSet<String> newLabels = new HashSet<>();
+    /**
+     * Recalculate the labels based on all the images.
+     */
+    private void recalculateLabels() {
         lock.lock();
+
         try {
-            for (Image i : images) {
-                newLabels.addAll(i.metadata.labels);
-            }
-
-            // are they the same?
-            if (newLabels.containsAll(labels) && labels.containsAll(newLabels)) {
-                return;
-            }
-
             labels.clear();
-            labels.addAll(newLabels);
+            for (Image i : images) {
+                labels.addAll(i.metadata.labels);
+            }
         } finally {
             lock.unlock();
         }
     }
 
+    /**
+     * Dispose of the library.
+     */
     public void dispose() {
         listeners.clear();
     }
 
+    /**
+     * Notify all registered LibraryChangeListener for changes in the library.
+     */
     private void notifyLibraryChange() {
         for (LibraryChangeListener l : listeners) {
             l.onLibraryChange(images);

@@ -13,6 +13,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
+/**
+ * Controller for the {@see LibraryView}
+ */
 public class LibraryController {
     private final Model model;
     private final LibraryView view;
