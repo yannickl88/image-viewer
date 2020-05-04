@@ -1,19 +1,26 @@
 package nl.yannickl88.imageview.view;
 
+import nl.yannickl88.imageview.controller.LibraryController;
+import nl.yannickl88.imageview.image.TransferableImage;
 import nl.yannickl88.imageview.model.Image;
 import nl.yannickl88.imageview.view.input.LabelInputField;
 import nl.yannickl88.imageview.view.input.SearchField;
 import nl.yannickl88.imageview.view.layout.ColumnLayout;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.*;
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.List;
 
-public class LibraryView extends JFrame {
+public class LibraryView extends JFrame implements ClipboardOwner {
     private final JPanel overviewPanel;
     private final JPanel mainPanel;
     private final JPanel searchPanel;
@@ -295,6 +302,11 @@ public class LibraryView extends JFrame {
     public void setImages(List<Image> images) {
         overviewPanel.removeAll();
 
+        if (!SwingUtilities.isEventDispatchThread()) {
+            SwingUtilities.invokeLater(() -> setImages(images));
+            return;
+        }
+
         for (Image i : images) {
             ImageThumbView view;
             if (thumbCache.containsKey(i)) {
@@ -473,5 +485,21 @@ public class LibraryView extends JFrame {
         if (confirmed == JOptionPane.YES_OPTION) {
             handler.onDelete(image);
         }
+    }
+
+    @Override
+    public void lostOwnership(Clipboard clipboard, Transferable contents) {
+        System.out.println("lostOwnership");
+    }
+
+    public void copyImage(Image image) {
+        Thread thread = new Thread(() -> {
+            try {
+                TransferableImage trans = new TransferableImage(ImageIO.read(new File(image.metadata.path)));
+                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(trans, LibraryView.this);
+            } catch (IOException ignored) {
+            }
+        });
+        thread.start();
     }
 }

@@ -5,7 +5,6 @@ import nl.yannickl88.imageview.model.library.LibraryWatcher;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
@@ -82,9 +81,9 @@ public class Model {
         watcher.start();
     }
 
-    private synchronized void notifyLibraryChange(Collection<Image> images) {
+    private synchronized void notifyLibraryChange(List<Image> images) {
         for (ModelChangeListener l : listeners) {
-            l.onLibraryChange(this.images);
+            l.onLibraryChange(images);
         }
     }
 

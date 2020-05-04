@@ -1,6 +1,5 @@
 package nl.yannickl88.imageview.controller;
 
-import nl.yannickl88.imageview.image.TransferableImage;
 import nl.yannickl88.imageview.model.Image;
 import nl.yannickl88.imageview.model.Model;
 import nl.yannickl88.imageview.model.library.Library;
@@ -9,30 +8,18 @@ import nl.yannickl88.imageview.view.DuplicateImagesView;
 import nl.yannickl88.imageview.view.ImageView;
 import nl.yannickl88.imageview.view.LibraryView;
 
-import javax.imageio.ImageIO;
-import javax.swing.*;
-import java.awt.*;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.ClipboardOwner;
-import java.awt.datatransfer.Transferable;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-public class LibraryController implements ClipboardOwner {
+public class LibraryController {
     private final Model model;
     private final LibraryView view;
     private final OpenHandler handler;
 
     private Image activeImage = null;
     private final ArrayList<Image> visible = new ArrayList<>();
-
-    @Override
-    public void lostOwnership(Clipboard clipboard, Transferable contents) {
-        System.out.println("lostOwnership");
-    }
 
     public interface OpenHandler {
         void onOpen(Library library);
@@ -188,20 +175,12 @@ public class LibraryController implements ClipboardOwner {
         model.addChangeListener(new Model.ModelChangeListener() {
             @Override
             public void onLibraryChange(List<Image> images) {
-                if (SwingUtilities.isEventDispatchThread()) {
-                    updateImages(images);
-                } else {
-                    SwingUtilities.invokeLater(() -> updateImages(images));
-                }
+                updateImages(images);
             }
 
             @Override
             public void onLibraryWatcherStatusChange(String status) {
-                if (SwingUtilities.isEventDispatchThread()) {
-                    updateApplicationStatus(status);
-                } else {
-                    SwingUtilities.invokeLater(() -> updateApplicationStatus(status));
-                }
+                updateApplicationStatus(status);
             }
         });
 
@@ -327,14 +306,7 @@ public class LibraryController implements ClipboardOwner {
             return;
         }
 
-        Thread thread = new Thread(() -> {
-            try {
-                TransferableImage trans = new TransferableImage(ImageIO.read(new File(activeImage.metadata.path)));
-                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(trans, LibraryController.this);
-            } catch (IOException ignored) {
-            }
-        });
-        thread.start();
+        view.copyImage(activeImage);
     }
 
     public void save() {

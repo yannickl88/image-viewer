@@ -24,12 +24,12 @@ public class SetupController {
 
             @Override
             public void onSelectFolder() {
-                view.openFileChooser(file -> closeAndOpenLibrary(Library.open(file)));
+                view.openFolderChooser(file -> closeAndOpenLibrary(Library.init(file)));
             }
 
             @Override
             public void onOpenFile() {
-                view.openFolderChooser(file -> closeAndOpenLibrary(Library.init(file)));
+                view.openFileChooser(file -> closeAndOpenLibrary(Library.open(file)));
             }
         });
 
