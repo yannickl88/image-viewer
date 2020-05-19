@@ -1,6 +1,5 @@
 package nl.yannickl88.imageview.view;
 
-import nl.yannickl88.imageview.controller.LibraryController;
 import nl.yannickl88.imageview.image.TransferableImage;
 import nl.yannickl88.imageview.model.Image;
 import nl.yannickl88.imageview.view.input.LabelInputField;
@@ -17,13 +16,15 @@ import java.awt.datatransfer.Transferable;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 public class LibraryView extends JFrame implements ClipboardOwner {
     private final JPanel overviewPanel;
     private final JPanel mainPanel;
     private final JPanel searchPanel;
+    private final JMenu menuFileQuickOpen;
     private final ImageView imagePanel;
     private final HashMap<Image, ImageThumbView> thumbCache;
     private boolean isSaved;
@@ -55,6 +56,7 @@ public class LibraryView extends JFrame implements ClipboardOwner {
     public interface MenuHandler {
         void onNew();
         void onOpen();
+        void onOpen(File file);
         void onSave();
         void onLabelManage();
         void onFindDuplicates();
@@ -96,17 +98,17 @@ public class LibraryView extends JFrame implements ClipboardOwner {
         fileMenu.setMnemonic(KeyEvent.VK_F);
 
         JMenuItem menuFileNew = new JMenuItem("New", KeyEvent.VK_N);
-        JMenuItem menuFileOpen = new JMenuItem("Open", KeyEvent.VK_O);
+        menuFileQuickOpen = new JMenu("Open");
+        menuFileQuickOpen.setMnemonic(KeyEvent.VK_O);
         JMenuItem menuFileSave = new JMenuItem("Save", KeyEvent.VK_S);
         JMenuItem menuFileClose = new JMenuItem("Quit", KeyEvent.VK_Q);
 
         menuFileNew.addActionListener(e -> menuHandler.onNew());
-        menuFileOpen.addActionListener(e -> menuHandler.onOpen());
         menuFileSave.addActionListener(e -> menuHandler.onSave());
         menuFileClose.addActionListener(e -> navigationHandler.onExit());
 
         fileMenu.add(menuFileNew);
-        fileMenu.add(menuFileOpen);
+        fileMenu.add(menuFileQuickOpen);
         fileMenu.add(menuFileSave);
         fileMenu.addSeparator();
         fileMenu.add(menuFileClose);
@@ -295,6 +297,25 @@ public class LibraryView extends JFrame implements ClipboardOwner {
         this.menuHandler = menuHandler;
     }
 
+    public void setQuickOpenFile(File[] files) {
+        this.menuFileQuickOpen.removeAll();
+
+        if (files.length > 0) {
+            for (File f : files) {
+                JMenuItem fileItem = new JMenuItem(f.getName());
+                fileItem.addActionListener(e -> menuHandler.onOpen(f));
+
+                this.menuFileQuickOpen.add(fileItem);
+            }
+
+            this.menuFileQuickOpen.addSeparator();
+        }
+
+        JMenuItem menuFileOpen = new JMenuItem("Browse...", KeyEvent.VK_B);
+        menuFileOpen.addActionListener(e -> menuHandler.onOpen());
+        this.menuFileQuickOpen.add(menuFileOpen);
+    }
+
     public void setSaved(boolean saved) {
         this.isSaved = saved;
     }
@@ -448,25 +469,33 @@ public class LibraryView extends JFrame implements ClipboardOwner {
         dialog.setVisible(true);
     }
 
-    public void openFolderChooser(NewFileHandler handler) {
+    public void openFolderChooser(NewFileHandler handler, File startingDirectory) {
         JFileChooser chooser = new JFileChooser();
         chooser.setCurrentDirectory(new java.io.File("."));
         chooser.setDialogTitle("Choose a folder");
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         chooser.setAcceptAllFileFilterUsed(false);
 
+        if (null != startingDirectory) {
+            chooser.setCurrentDirectory(startingDirectory);
+        }
+
         if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             handler.onOpen(chooser.getSelectedFile());
         }
     }
 
-    public void openFileChooser(OpenFileHandler handler) {
+    public void openFileChooser(OpenFileHandler handler, File startingDirectory) {
         JFileChooser chooser = new JFileChooser();
         chooser.setCurrentDirectory(new java.io.File("."));
         chooser.setDialogTitle("Choose a collection");
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.setAcceptAllFileFilterUsed(false);
         chooser.setFileFilter(new FileNameExtensionFilter("Image collection", "icol"));
+
+        if (null != startingDirectory) {
+            chooser.setCurrentDirectory(startingDirectory);
+        }
 
         if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             handler.onOpen(chooser.getSelectedFile());

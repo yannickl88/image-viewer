@@ -86,12 +86,17 @@ public class LibraryController {
         this.view.setMenuHandler(new LibraryView.MenuHandler() {
             @Override
             public void onNew() {
-                view.openFolderChooser(folder -> closeAndOpenLibrary(Library.init(folder)));
+                view.openFolderChooser(folder -> closeAndOpenLibrary(Library.init(folder)), model.getConfigDir());
             }
 
             @Override
             public void onOpen() {
-                view.openFileChooser(file -> closeAndOpenLibrary(Library.open(file)));
+                view.openFileChooser(this::onOpen, model.getConfigDir());
+            }
+
+            @Override
+            public void onOpen(File file) {
+                closeAndOpenLibrary(Library.open(file));
             }
 
             @Override
@@ -187,6 +192,7 @@ public class LibraryController {
             }
         });
 
+        view.setQuickOpenFile(model.getAdditionalLibraries());
         view.setImages(model.getAllImages());
         model.startWatcher();
         view.open();

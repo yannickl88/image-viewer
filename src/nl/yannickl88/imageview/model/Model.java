@@ -19,6 +19,10 @@ public class Model {
     private LibraryWatcher watcher;
     private final ArrayList<Image> images = new ArrayList<>();
 
+    public File[] getAdditionalLibraries() {
+        return library.getConfigFile().getParentFile().listFiles((dir, name) -> name.endsWith(".icol") && !library.getConfigFile().getName().equals(name));
+    }
+
     public interface ModelChangeListener {
         /**
          * Triggers when an images is added, removed or updated in the library.
@@ -62,6 +66,17 @@ public class Model {
         } finally {
             lock.unlock();
         }
+    }
+
+    /**
+     * Get the directory in which the configuration file is located on the file system.
+     */
+    public File getConfigDir() {
+        if (!isPersistent()) {
+            return null;
+        }
+
+        return library.getConfigFile().getParentFile();
     }
 
     /**

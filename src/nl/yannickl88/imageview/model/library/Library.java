@@ -248,7 +248,14 @@ public class Library {
     }
 
     /**
-     * Return the file of the library information.
+     * Return the configuration file of the library.
+     */
+    public File getConfigFile() {
+        return config;
+    }
+
+    /**
+     * Return the folder of the library information.
      */
     public File getDir() {
         return root;
